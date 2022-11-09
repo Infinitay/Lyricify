@@ -14,13 +14,32 @@ export default function HomePage() {
 	const [colorsCJS, setColorsCJS] = useState<string[]>([]);
 	const [colorsCJSAvg, setColorsCJSAvg] = useState<string>("");
 
-	const fileRef = useRef<HTMLInputElement>(null);
+	const fileUploadInputRef = useRef<HTMLInputElement>(null);
+	const urlInputRef = useRef<HTMLInputElement>(null);
+
+	const hasFileUploaded: boolean = !!fileUploadInputRef.current?.files?.length;
 
 	const updateImageURL = (url: string) => {
-		// If url matches REGEX, set imageURL to url
-		if (REGEX.test(url)) {
+		if (url === "") {
+			if (hasFileUploaded) {
+				const file = fileUploadInputRef?.current?.files?.[0];
+				if (!file) return;
+				updateImageFile(file);
+			}
+			setImageURL("");
+		} else if (REGEX.test(url)) {
+			// If url matches REGEX, set imageURL to url
 			setImageURL(url);
 		}
+	};
+
+	const updateImageFile = (file: File) => {
+		const reader = new FileReader();
+		reader.readAsDataURL(file);
+		reader.onload = (e) => {
+			setImageURL(e.target?.result as string);
+			setUploadedImage(true);
+		};
 	};
 
 	useEffect(() => {
@@ -42,68 +61,72 @@ export default function HomePage() {
 	}, [imageURL]);
 
 	const handleUploadButton = () => {
-		fileRef.current?.click();
+		console.log("Upload button clicked");
+		fileUploadInputRef.current?.click();
 	};
 
 	const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+		console.log("File upload");
 		if (!e.target.files || e.target.files.length === 0) {
 			return;
 		}
-		setUploadedImage(true);
 		const file = e.target.files[0];
-		const reader = new FileReader();
-		reader.readAsDataURL(file);
-		reader.onload = (e) => {
-			setImageURL(e.target?.result as string);
-		};
+		updateImageFile(file);
+	};
+
+	const handleClearFileUpload = () => {
+		setUploadedImage(!uploadedImage);
+		setImageURL("");
+		if (fileUploadInputRef.current) fileUploadInputRef.current.value = "";
+		// In case there is a URL specified, go ahead and just reload that instead
+		updateImageURL(urlInputRef.current?.value as string);
 	};
 
 	return (
 		<NextUIProvider>
 			<div className="main">
-				{imageURL ? <div className="image-container"><img className="image" src={imageURL}></img></div> : null}
-					<Grid.Container gap={1} justify="center" css={{ maxWidth: "75vw" }}>
-						{colorsCJS.map((hexColor, index) => (
-							<Grid xs={4} sm={2} md={2} lg={1} key={index} justify="center">
-								<Card isPressable isHoverable variant="bordered">
-									<Card.Body css={{ backgroundColor: hexColor, paddingBottom: "50px" }} />
-									<Card.Footer
-										isBlurred
-										css={{
-											justifyItems: "center",
-											borderBlockStart: "inherit",
-										}}
-									>
-										<Row wrap="wrap" justify="center">
-											<Text css={{ minWidth: "max-content" }} b>
-												{hexColor}
-											</Text>
-										</Row>
-									</Card.Footer>
-								</Card>
-							</Grid>
-						))}
-					</Grid.Container>
+				{imageURL ? (
+					<div className="image-container">
+						<img className="image" src={imageURL}></img>
+					</div>
+				) : null}
+				<Grid.Container gap={1} justify="center" css={{ maxWidth: "75vw" }}>
+					{colorsCJS.map((hexColor, index) => (
+						<Grid xs={4} sm={2} md={2} lg={1} key={index} justify="center">
+							<Card isPressable isHoverable variant="bordered">
+								<Card.Body css={{ backgroundColor: hexColor, paddingBottom: "50px" }} />
+								<Card.Footer
+									isBlurred
+									css={{
+										justifyItems: "center",
+										borderBlockStart: "inherit",
+									}}
+								>
+									<Row wrap="wrap" justify="center">
+										<Text css={{ minWidth: "max-content" }} b>
+											{hexColor}
+										</Text>
+									</Row>
+								</Card.Footer>
+							</Card>
+						</Grid>
+					))}
+				</Grid.Container>
 				<Button.Group>
 					<Button onClick={handleUploadButton}>Upload Image</Button>
-					<input hidden ref={fileRef} type="file" accept=".png, .jpg, .jpeg" onChange={handleFileUpload} />
-					<Button
-						animated={false}
-						disabled={!uploadedImage}
-						onClick={() => {
-							setUploadedImage(!uploadedImage);
-							setImageURL("");
-							if (fileRef.current) fileRef.current.value = "";
-						}}
-					>
+					<input hidden ref={fileUploadInputRef} type="file" accept=".png, .jpg, .jpeg" onChange={handleFileUpload} />
+					<Button animated={false} disabled={!uploadedImage} onClick={handleClearFileUpload}>
 						x
 					</Button>
 				</Button.Group>
-				<Input type={"url"} clearable underlined placeholder="Image from URL" onChange={(e) => updateImageURL(e.target.value)}></Input>
-				{/* <Text>Test: '{imageURL}'</Text>
-				<Text>Test2: '{uploadedImage.valueOf()}'</Text>
-				{colorsCJS.length ? <Text>Palette: {colorsCJS.join(", ")}</Text> : null}
-				{colorsCJSAvg ? <Text>Average: {colorsCJSAvg}</Text> : null} */}
+				<Input
+					ref={urlInputRef}
+					type={"url"}
+					clearable
+					underlined
+					placeholder="Image from URL"
+					onChange={(e) => updateImageURL(e.target.value)}
+				></Input>
 			</div>
 		</NextUIProvider>
 	);
