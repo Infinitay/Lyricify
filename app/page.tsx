@@ -96,31 +96,31 @@ export default function HomePage() {
 							<img className="image" src={imageURL}></img>
 						</div>
 						<Spacer y={2}></Spacer>
+						<Grid.Container gap={1} justify="center" css={{ maxWidth: "75vw" }}>
+							{colorsCJS.map((hexColor, index) => (
+								<Grid xs={4} sm={2} md={2} lg={1} key={index} justify="center">
+									<Card isPressable isHoverable variant="bordered" onClick={() => handleColorClick(hexColor)}>
+										<Card.Body css={{ backgroundColor: hexColor, paddingBottom: "50px" }} />
+										<Card.Footer
+											isBlurred
+											css={{
+												justifyItems: "center",
+												borderBlockStart: "inherit",
+											}}
+										>
+											<Row wrap="wrap" justify="center">
+												<Text css={{ minWidth: "max-content" }} b>
+													{hexColor}
+												</Text>
+											</Row>
+										</Card.Footer>
+									</Card>
+								</Grid>
+							))}
+						</Grid.Container>
+						<Spacer y={1}></Spacer>
 					</>
 				) : null}
-				<Grid.Container gap={1} justify="center" css={{ maxWidth: "75vw" }}>
-					{colorsCJS.map((hexColor, index) => (
-						<Grid xs={4} sm={2} md={2} lg={1} key={index} justify="center">
-							<Card isPressable isHoverable variant="bordered" onClick={() => handleColorClick(hexColor)}>
-								<Card.Body css={{ backgroundColor: hexColor, paddingBottom: "50px" }} />
-								<Card.Footer
-									isBlurred
-									css={{
-										justifyItems: "center",
-										borderBlockStart: "inherit",
-									}}
-								>
-									<Row wrap="wrap" justify="center">
-										<Text css={{ minWidth: "max-content" }} b>
-											{hexColor}
-										</Text>
-									</Row>
-								</Card.Footer>
-							</Card>
-						</Grid>
-					))}
-				</Grid.Container>
-				<Spacer y={1}></Spacer>
 				<Button.Group>
 					<Button onClick={handleUploadButton}>Upload Image</Button>
 					<input ref={fileUploadInputRef} hidden type="file" accept=".png, .jpg, .jpeg" onChange={handleFileUpload} />
