@@ -13,6 +13,7 @@ export default function HomePage() {
 	const [uploadedImage, setUploadedImage] = useState<boolean>(false);
 	const [colorsCJS, setColorsCJS] = useState<string[]>([]);
 	const [colorsCJSAvg, setColorsCJSAvg] = useState<string>("");
+	const [selectedColor, setSelectedColor] = useState<string>("");
 
 	const fileUploadInputRef = useRef<HTMLInputElement>(null);
 	const urlInputRef = useRef<HTMLInputElement>(null);
@@ -31,16 +32,20 @@ export default function HomePage() {
 	};
 
 	const updateImageURL = (url: string) => {
+		console.log("updateImageURL: " + url);
 		if (url === "") {
 			if (hasFileUploaded) {
+				console.log("updateImageURL: hasFileUploaded");
 				const file = fileUploadInputRef?.current?.files?.[0];
 				if (!file) return;
 				updateImageFile(file);
 			} else {
+				console.log("updateImageURL: !hasFileUploaded");
 				setImageURL("");
 				if (mainDivRef.current) mainDivRef.current.style.backgroundColor = "";
 			}
 		} else if (REGEX.test(url)) {
+			console.log("updateImageURL: REGEX.test(url)");
 			// If url matches REGEX, set imageURL to url
 			setImageURL(url);
 		}
@@ -48,24 +53,45 @@ export default function HomePage() {
 
 	useEffect(() => {
 		const getColorsCJS = async () => {
+			console.log("useEffect");
 			if (imageURL) {
-				const colors = (await prominent(imageURL, { format: "hex", amount: 5, group: 30 })) as [];
+				const colors = (await prominent(imageURL, { format: "hex", amount: 5, group: 30 })) as string[];
 				const avg = (await average(imageURL, { format: "hex" })) as "";
 				setColorsCJS([...colors, avg]);
 				setColorsCJSAvg(avg);
+				setSelectedColor(colors[0]!);
+				/* if (selectedColor && mainDivRef.current) {
+					mainDivRef.current.style.backgroundColor = selectedColor;
+				} */
 			} else {
 				setColorsCJS([]);
 				setColorsCJSAvg("");
+				setSelectedColor("");
 			}
 		};
 		getColorsCJS();
 	}, [imageURL]);
 
+	useEffect(() => {
+		if (mainDivRef.current) {
+			const selectedColorRGB = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(selectedColor);
+			if (!selectedColorRGB) return;
+			const selectedColorRBGString = `${parseInt(selectedColorRGB[1], 16)}, ${parseInt(selectedColorRGB[2], 16)}, ${parseInt(selectedColorRGB[3], 16)}`;
+			mainDivRef.current.style.setProperty("--main-bg-color", `${selectedColorRBGString}`);
+			console.log(selectedColorRGB);
+			console.log(selectedColorRBGString);
+			//mainDivRef.current.style.backgroundColor = selectedColor;
+			// if (imageContainerRef.current) imageContainerRef.current.style.setProperty("--tw-shadow-color", colorsCJSAvg);
+		}
+	}, [selectedColor]);
+
 	const handleUploadButton = () => {
+		console.log("handleUploadButton");
 		fileUploadInputRef.current?.click();
 	};
 
 	const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+		console.log("handleFileUpload");
 		if (!e.target.files || e.target.files.length === 0) {
 			return;
 		}
@@ -74,17 +100,20 @@ export default function HomePage() {
 	};
 
 	const handleClearFileUpload = () => {
+		console.log("handleClearFileUpload");
 		setUploadedImage(!uploadedImage);
-		updateImageURL("");
+		updateImageURL((urlInputRef.current?.value as string) || "");
 		if (fileUploadInputRef.current) fileUploadInputRef.current.value = "";
 		// In case there is a URL specified, go ahead and just reload that instead
-		updateImageURL(urlInputRef.current?.value as string);
 	};
 
 	const handleColorClick = (hexColor: string) => {
 		console.log(`Clicked on ${hexColor}`);
-		navigator.clipboard.writeText(hexColor);
-		if (mainDivRef.current) mainDivRef.current.style.backgroundColor = hexColor;
+		try {
+			navigator.clipboard.writeText(hexColor);
+		} finally {
+			setSelectedColor(hexColor);
+		}
 	};
 
 	return (
@@ -92,8 +121,15 @@ export default function HomePage() {
 			<div ref={mainDivRef} className="main">
 				{imageURL ? (
 					<>
-						<div ref={imageContainerRef} className="image-container">
-							<img className="image" src={imageURL}></img>
+						<div
+							ref={imageContainerRef}
+							className={`image-container rounded-lg filter shadow-lg shadow-transparent`}
+							style={{ color: selectedColor }}
+						>
+							{/* <img id="blurredImage" className="image filter drop-shadow-lg blur-xl relative" src={imageURL}></img> */}
+							{/* <img id="image" className="image filter drop-shadow-lg absolute w-[99%]" src={imageURL}></img> */}
+							<img id="image" className="image" src={imageURL}></img>
+							<div className="image-border-fade pointer-events-none" style={{ color: selectedColor }}></div>
 						</div>
 						<Spacer y={2}></Spacer>
 						<Grid.Container gap={1} justify="center" css={{ maxWidth: "75vw" }}>

@@ -1,33 +1,102 @@
-* {
-	box-sizing: border-box;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 html,
 body {
 	font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
 
-.main {
+/* Do first child to prevent buttons from changing */
+.main:first-child {
 	width: 100vw;
 	height: 100vh;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+	--main-bg-color: #ffffff;
+	background-color: rgba(var(--main-bg-color), 1);
 }
 
 .image-container {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	min-width: 40vw;
+	min-width: max-content;
+	max-width: max-content;
 	min-height: 40vh;
-	max-width: 40vw;
 	max-height: 40vh;
+	z-index: 1;
+	position: relative;
+	overflow: hidden;
 }
 
 .image {
 	max-width: 100%;
 	max-height: 100%;
 	object-fit: scale-down;
+	border-radius: 1rem;
+	/* clip-path: inset(0 0 0 0 round 8px); */
+}
+
+.image-border-fade {
+	width: 100%;
+	position: absolute;
+	bottom: 0px;
+	top: 0px;
+
+	/* remove the inset, and the ghosted artificat goes away */
+	/* the larger the blur/spread radius, the more visible the ghosting is */
+	/* i think its more noticable to see what is going on when the blur radius is large */
+	/* if you set the blur radius to 0 it goes away */
+	/* -webkit-box-shadow: 0px 0px 48px 48px inset rgb(var(--main-bg-color)); */
+	box-shadow: 0px 0px 48px 48px inset rgb(var(--main-bg-color));
+	/* background: -o-radial-gradient(center, ellipse, rgba(var(--main-bg-color), 0) 0%, rgba(var(--main-bg-color), 1)); */
+	background: radial-gradient(ellipse at center, rgba(var(--main-bg-color), 0) 0%, rgba(var(--main-bg-color), 1));
+}
+
+.image-border-fade2 {
+	--main-fade-color: rgba(90, 60, 60, 1);
+	--secondary-fade-color: rgba(90, 60, 60, 1%);
+	--first-gradient-length: 0%;
+	--second-gradient-length: 5%;
+	width: 100%;
+	position: absolute;
+	bottom: 0px;
+	top: 0px;
+	-webkit-box-shadow: 0px 0px 48px 48px inset;
+	-moz-box-shadow: 0px 0px 48px 48px inset;
+	box-shadow: 0px 0px 48px 48px inset;
+	color: var(--main-fade-color);
+	/* This fixes the annoying artificates on the corners when using box-shadow inset */
+	/* https://stackoverflow.com/a/72661547/7835042 */
+	transform: translate3d(0, 0, 0);
+	/* background: radial-gradient(ellipse at center, rgba(90, 60, 60, 0) 0%,rgba(90, 60, 60, 1) 70%,rgba(90, 60, 60, 1)); */
+	/* background: radial-gradient(ellipse at center, rgba(60, 120, 240, 0) 0%,rgba(60, 120, 240, 1) 70%,rgba(60, 120, 240, 1)); */
+	/* Add a transparent linear gradiant to the divs border*/
+	background: linear-gradient(to top, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)),
+		linear-gradient(to bottom, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)),
+		linear-gradient(to left, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)),
+		linear-gradient(to right, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length));
+
+	/* background: -o-linear-gradient(to top, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)),
+		-o-linear-gradient(to bottom, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)),
+		-o-linear-gradient(to left, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)),
+		-o-linear-gradient(to right, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length));
+
+	background: -moz-linear-gradient(to top, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)),
+		-moz-linear-gradient(to bottom, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)),
+		-moz-linear-gradient(to left, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)),
+		-moz-linear-gradient(to right, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length));
+
+	background: -webkit-linear-gradient(to top, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)),
+		-webkit-linear-gradient(to bottom, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)),
+		-webkit-linear-gradient(to left, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)),
+		-webkit-linear-gradient(to right, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length));
+
+	background: -ms-linear-gradient(to top, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)),
+		-ms-linear-gradient(to bottom, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)),
+		-ms-linear-gradient(to left, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)),
+		-ms-linear-gradient(to right, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)); */
 }
