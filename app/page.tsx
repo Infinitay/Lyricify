@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { NextUIProvider } from "@nextui-org/react";
-import { Text, Input, Image, Grid, Card, Row, Spacer, Button } from "@nextui-org/react";
+import { Text, Input, Grid, Card, Row, Spacer, Button } from "@nextui-org/react";
 
 import { prominent, average } from "color.js";
 
@@ -123,36 +123,35 @@ export default function HomePage() {
 					<>
 						<div
 							ref={imageContainerRef}
-							className={`image-container rounded-lg filter shadow-lg shadow-transparent`}
+							className={`image-container`}
 							style={{ color: selectedColor }}
 						>
-							{/* <img id="blurredImage" className="image filter drop-shadow-lg blur-xl relative" src={imageURL}></img> */}
-							{/* <img id="image" className="image filter drop-shadow-lg absolute w-[99%]" src={imageURL}></img> */}
 							<img id="image" className="image" src={imageURL}></img>
 							<div className="image-border-fade pointer-events-none" style={{ color: selectedColor }}></div>
 						</div>
 						<Spacer y={2}></Spacer>
 						<Grid.Container gap={1} justify="center" css={{ maxWidth: "75vw" }}>
-							{colorsCJS.map((hexColor, index) => (
-								<Grid xs={4} sm={2} md={2} lg={1} key={index} justify="center">
-									<Card isPressable isHoverable variant="bordered" onClick={() => handleColorClick(hexColor)}>
-										<Card.Body css={{ backgroundColor: hexColor, paddingBottom: "50px" }} />
-										<Card.Footer
-											isBlurred
-											css={{
-												justifyItems: "center",
-												borderBlockStart: "inherit",
-											}}
-										>
-											<Row wrap="wrap" justify="center">
-												<Text css={{ minWidth: "max-content" }} b>
-													{hexColor}
-												</Text>
-											</Row>
-										</Card.Footer>
-									</Card>
-								</Grid>
-							))}
+							{colorsCJS.length &&
+								colorsCJS.map((hexColor, index) => (
+									<Grid xs={4} sm={2} md={2} lg={1} key={index} justify="center">
+										<Card isPressable isHoverable variant="bordered" onClick={() => handleColorClick(hexColor)}>
+											<Card.Body css={{ backgroundColor: hexColor, paddingBottom: "50px" }} />
+											<Card.Footer
+												isBlurred
+												css={{
+													justifyItems: "center",
+													borderBlockStart: "inherit",
+												}}
+											>
+												<Row wrap="wrap" justify="center">
+													<Text css={{ minWidth: "max-content" }} b>
+														{hexColor}
+													</Text>
+												</Row>
+											</Card.Footer>
+										</Card>
+									</Grid>
+								))}
 						</Grid.Container>
 						<Spacer y={1}></Spacer>
 					</>
