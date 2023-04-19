@@ -28,41 +28,39 @@ export default function HomePage() {
 		reader.onload = (e) => {
 			setImageURL(e.target?.result as string);
 			setUploadedImage(true);
+			if (urlInputRef.current) urlInputRef.current.value = "";
 		};
 	};
 
 	const updateImageURL = (url: string) => {
 		console.log("updateImageURL: " + url);
 		if (url === "") {
-			if (hasFileUploaded) {
+			if (uploadedImage) {
 				console.log("updateImageURL: hasFileUploaded");
-				const file = fileUploadInputRef?.current?.files?.[0];
-				if (!file) return;
-				updateImageFile(file);
-			} else {
-				console.log("updateImageURL: !hasFileUploaded");
-				setImageURL("");
-				if (mainDivRef.current) mainDivRef.current.style.backgroundColor = "";
+				if (fileUploadInputRef.current) fileUploadInputRef.current.value = "";
 			}
+			setImageURL("");
+			if (mainDivRef.current) mainDivRef.current.style.setProperty("--main-bg-color", `#ffffff`);
 		} else if (REGEX.test(url)) {
-			console.log("updateImageURL: REGEX.test(url)");
 			// If url matches REGEX, set imageURL to url
+			if (uploadedImage) {
+				console.log("updateImageURL: hasFileUploaded and URL matches REGEX");
+				if (fileUploadInputRef.current) fileUploadInputRef.current.value = "";
+				setUploadedImage(false);
+			}
 			setImageURL(url);
 		}
 	};
 
 	useEffect(() => {
+		console.log("useEffect imageURL");
 		const getColorsCJS = async () => {
-			console.log("useEffect");
 			if (imageURL) {
 				const colors = (await prominent(imageURL, { format: "hex", amount: 5, group: 30 })) as string[];
 				const avg = (await average(imageURL, { format: "hex" })) as "";
 				setColorsCJS([...colors, avg]);
 				setColorsCJSAvg(avg);
 				setSelectedColor(colors[0]!);
-				/* if (selectedColor && mainDivRef.current) {
-					mainDivRef.current.style.backgroundColor = selectedColor;
-				} */
 			} else {
 				setColorsCJS([]);
 				setColorsCJSAvg("");
@@ -73,15 +71,12 @@ export default function HomePage() {
 	}, [imageURL]);
 
 	useEffect(() => {
+		console.log("useEffect selectedColor");
 		if (mainDivRef.current) {
 			const selectedColorRGB = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(selectedColor);
 			if (!selectedColorRGB) return;
 			const selectedColorRBGString = `${parseInt(selectedColorRGB[1], 16)}, ${parseInt(selectedColorRGB[2], 16)}, ${parseInt(selectedColorRGB[3], 16)}`;
 			mainDivRef.current.style.setProperty("--main-bg-color", `${selectedColorRBGString}`);
-			console.log(selectedColorRGB);
-			console.log(selectedColorRBGString);
-			//mainDivRef.current.style.backgroundColor = selectedColor;
-			// if (imageContainerRef.current) imageContainerRef.current.style.setProperty("--tw-shadow-color", colorsCJSAvg);
 		}
 	}, [selectedColor]);
 
@@ -101,10 +96,8 @@ export default function HomePage() {
 
 	const handleClearFileUpload = () => {
 		console.log("handleClearFileUpload");
-		setUploadedImage(!uploadedImage);
-		updateImageURL((urlInputRef.current?.value as string) || "");
-		if (fileUploadInputRef.current) fileUploadInputRef.current.value = "";
-		// In case there is a URL specified, go ahead and just reload that instead
+		setUploadedImage(false);
+		updateImageURL("");
 	};
 
 	const handleColorClick = (hexColor: string) => {
@@ -121,17 +114,13 @@ export default function HomePage() {
 			<div ref={mainDivRef} className="main">
 				{imageURL ? (
 					<>
-						<div
-							ref={imageContainerRef}
-							className={`image-container`}
-							style={{ color: selectedColor }}
-						>
+						<div ref={imageContainerRef} className={`image-container`} style={{ color: selectedColor }}>
 							<img id="image" className="image" src={imageURL}></img>
 							<div className="image-border-fade pointer-events-none" style={{ color: selectedColor }}></div>
 						</div>
 						<Spacer y={2}></Spacer>
 						<Grid.Container gap={1} justify="center" css={{ maxWidth: "75vw" }}>
-							{colorsCJS.length &&
+							{!!colorsCJS.length &&
 								colorsCJS.map((hexColor, index) => (
 									<Grid xs={4} sm={2} md={2} lg={1} key={index} justify="center">
 										<Card isPressable isHoverable variant="bordered" onClick={() => handleColorClick(hexColor)}>
