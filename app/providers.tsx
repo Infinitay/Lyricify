@@ -2,17 +2,11 @@
 "use client";
 
 import { useServerInsertedHTML } from "next/navigation";
-import { CssBaseline } from "@nextui-org/react";
 import { NextUIProvider } from "@nextui-org/react";
+import { useState, useEffect, Fragment } from "react";
 
-export default function Providers({ children }: { children: React.ReactNode }) {
-	useServerInsertedHTML(() => {
-		return <>{CssBaseline.flush()}</>;
-	});
-
+export default function Providers({ children }: { children: React.ReactNode }, { ...delegated }) {
 	return (
-		<>
 			<NextUIProvider>{children}</NextUIProvider>
-		</>
 	);
 }

@@ -4,7 +4,7 @@ import Providers from "./providers";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="en">
+		<html lang="en" className='light'>
 			<head>
 				<title>Lyricfy</title>
 				<meta name="description" content="Elegantly display and capture a song's lyrics" />
