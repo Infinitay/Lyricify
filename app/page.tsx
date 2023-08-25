@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import { NextUIProvider } from "@nextui-org/react";
-import { Text, Input, Grid, Card, Row, Spacer, Button } from "@nextui-org/react";
+import { Input, Card, CardBody, CardFooter, Spacer, Button, ButtonGroup, Link } from "@nextui-org/react";
 
 import { prominent, average } from "color.js";
+
+import { toBlob } from "html-to-image";
 
 const REGEX = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+(?:png|jpg|jpeg|gif|svg)+$/i;
 
@@ -19,8 +21,11 @@ export default function HomePage() {
 	const urlInputRef = useRef<HTMLInputElement>(null);
 	const mainDivRef = useRef<HTMLDivElement>(null);
 	const imageContainerRef = useRef<HTMLDivElement>(null);
+	const downloadButtonRef = useRef<HTMLButtonElement>(null);
 
 	const hasFileUploaded: boolean = !!fileUploadInputRef.current?.files?.length;
+	const [isReady, setIsReady] = useState<boolean>(false);
+	const [downloadBlob, setDownloadBlob] = useState<Blob | null>(null);
 
 	const updateImageFile = (file: File) => {
 		const reader = new FileReader();
@@ -54,6 +59,7 @@ export default function HomePage() {
 
 	useEffect(() => {
 		console.log("useEffect imageURL");
+		setIsReady(false);
 		const getColorsCJS = async () => {
 			if (imageURL) {
 				const colors = (await prominent(imageURL, { format: "hex", amount: 5, group: 30 })) as string[];
@@ -77,8 +83,27 @@ export default function HomePage() {
 			if (!selectedColorRGB) return;
 			const selectedColorRBGString = `${parseInt(selectedColorRGB[1], 16)}, ${parseInt(selectedColorRGB[2], 16)}, ${parseInt(selectedColorRGB[3], 16)}`;
 			mainDivRef.current.style.setProperty("--main-bg-color", `${selectedColorRBGString}`);
+			divToBlob();
+			setIsReady(true);
+		} else {
+			setIsReady(false);
 		}
 	}, [selectedColor]);
+
+	useEffect(() => {
+		divToBlob();
+	}, [isReady, imageURL]);
+
+	const divToBlob = () => {
+		const divElement = imageContainerRef.current;
+		if (divElement) {
+			toBlob(divElement, {}).then((blob) => {
+				if (blob) {
+					setDownloadBlob(blob);
+				}
+			});
+		}
+	};
 
 	const handleUploadButton = () => {
 		console.log("handleUploadButton");
@@ -112,48 +137,69 @@ export default function HomePage() {
 	return (
 		<NextUIProvider>
 			<div ref={mainDivRef} className="main">
-				{imageURL ? (
+				{imageURL && isReady ? (
 					<>
 						<div ref={imageContainerRef} className={`image-container`} style={{ color: selectedColor }}>
 							<img id="image" className="image" src={imageURL}></img>
 							<div className="image-border-fade pointer-events-none" style={{ color: selectedColor }}></div>
 						</div>
-						<Spacer y={2}></Spacer>
-						<Grid.Container gap={1} justify="center" css={{ maxWidth: "75vw" }}>
+						<Spacer y={5}></Spacer>
+						<Button
+							ref={downloadButtonRef}
+							as={Link}
+							href={downloadBlob ? URL.createObjectURL(downloadBlob) : ""}
+							target="_blank"
+							download={downloadBlob ? `lyricify-${selectedColor.substring(1)}.png` : ""}
+							color="default"
+							showAnchorIcon
+						>
+							Download
+						</Button>
+						<Spacer y={5}></Spacer>
+						<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-4 justify-center" style={{ maxWidth: "75vw" }}>
 							{!!colorsCJS.length &&
 								colorsCJS.map((hexColor, index) => (
-									<Grid xs={4} sm={2} md={2} lg={1} key={index} justify="center">
-										<Card isPressable isHoverable variant="bordered" onClick={() => handleColorClick(hexColor)}>
-											<Card.Body css={{ backgroundColor: hexColor, paddingBottom: "50px" }} />
-											<Card.Footer
-												isBlurred
-												css={{
-													justifyItems: "center",
-													borderBlockStart: "inherit",
-												}}
-											>
-												<Row wrap="wrap" justify="center">
-													<Text css={{ minWidth: "max-content" }} b>
-														{hexColor}
-													</Text>
-												</Row>
-											</Card.Footer>
+									<div className="col-span-1 sm:col-span-1 md:col-span-2 lg:col-span-1 flex justify-center" key={index}>
+										<Card className="border" isPressable isHoverable onClick={() => handleColorClick(hexColor)}>
+											<CardBody className="pb-12" style={{ backgroundColor: hexColor }} />
+											<CardFooter className="flex items-center justify-center border-t">
+												<div className="p-2 text-center w-full">
+													<p className="min-w-max w-20 font-bold">{hexColor}</p>
+												</div>
+											</CardFooter>
 										</Card>
-									</Grid>
+									</div>
 								))}
-						</Grid.Container>
-						<Spacer y={1}></Spacer>
+						</div>
+						<Spacer y={4}></Spacer>
 					</>
 				) : null}
-				<Button.Group>
-					<Button onClick={handleUploadButton}>Upload Image</Button>
-					<input ref={fileUploadInputRef} hidden type="file" accept=".png, .jpg, .jpeg" onChange={handleFileUpload} />
-					<Button animated={false} disabled={!uploadedImage} onClick={handleClearFileUpload}>
-						x
-					</Button>
-				</Button.Group>
-				<Spacer y={0.5}></Spacer>
-				<Input ref={urlInputRef} type={"url"} clearable placeholder="Image from URL" onChange={(e) => updateImageURL(e.target.value)}></Input>
+				<div>
+					<ButtonGroup fullWidth={true}>
+						<Button className="w-4/5" fullWidth={true} color="primary" onClick={handleUploadButton}>
+							{uploadedImage ? "Change Image" : "Upload Image"}
+						</Button>
+						<input ref={fileUploadInputRef} hidden type="file" accept=".png, .jpg, .jpeg" onChange={handleFileUpload} />
+						<Button
+							className="min-w-0 w-1/5"
+							fullWidth={false}
+							disableAnimation={false}
+							isDisabled={!uploadedImage}
+							onClick={handleClearFileUpload}
+						>
+							x
+						</Button>
+					</ButtonGroup>
+					<Spacer y={4}></Spacer>
+					<Input
+						fullWidth={false}
+						ref={urlInputRef}
+						type={"url"}
+						isClearable
+						placeholder="Image from URL"
+						onChange={(e) => updateImageURL(e.target.value)}
+					></Input>
+				</div>
 			</div>
 		</NextUIProvider>
 	);
