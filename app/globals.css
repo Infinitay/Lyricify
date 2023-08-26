@@ -17,6 +17,7 @@ body {
 	align-items: center;
 	--main-bg-color: #ffffff;
 	background-color: rgba(var(--main-bg-color), 1);
+	overflow: hidden;
 }
 
 .image-container {
@@ -25,7 +26,7 @@ body {
 	align-items: center;
 	min-width: max-content;
 	max-width: max-content;
-	min-height: 40vh;
+	height: 40vh;
 	max-height: 40vh;
 	z-index: 1;
 	position: relative;
@@ -99,4 +100,10 @@ body {
 		-ms-linear-gradient(to bottom, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)),
 		-ms-linear-gradient(to left, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)),
 		-ms-linear-gradient(to right, var(--main-fade-color) var(--first-gradient-length), var(--secondary-fade-color) var(--second-gradient-length)); */
+}
+
+.hex-grid {
+	min-width: max-content;
+	max-width: max-content;
+	max-height: 40vh;
 }

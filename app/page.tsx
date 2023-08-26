@@ -136,7 +136,7 @@ export default function HomePage() {
 
 	return (
 		<NextUIProvider>
-			<div ref={mainDivRef} className="main">
+			<div ref={mainDivRef} className="main pt-10">
 				{imageURL && isReady ? (
 					<>
 						<div ref={imageContainerRef} className={`image-container`} style={{ color: selectedColor }}>
@@ -156,25 +156,30 @@ export default function HomePage() {
 							Download
 						</Button>
 						<Spacer y={5}></Spacer>
-						<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-4 justify-center" style={{ maxWidth: "75vw" }}>
+						<div className="hex-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 justify-center" style={{ maxWidth: "75vw" }}>
 							{!!colorsCJS.length &&
 								colorsCJS.map((hexColor, index) => (
-									<div className="col-span-1 sm:col-span-1 md:col-span-2 lg:col-span-1 flex justify-center" key={index}>
-										<Card className="border" isPressable isHoverable onClick={() => handleColorClick(hexColor)}>
-											<CardBody className="pb-12" style={{ backgroundColor: hexColor }} />
-											<CardFooter className="flex items-center justify-center border-t">
-												<div className="p-2 text-center w-full">
-													<p className="min-w-max w-20 font-bold">{hexColor}</p>
-												</div>
-											</CardFooter>
-										</Card>
-									</div>
+									<Card
+										style={{ backgroundColor: hexColor }}
+										shadow="none"
+										className="shadow-md hover:shadow-xl drop-shadow-sm hover:drop-shadow-md"
+										isPressable
+										isHoverable
+										onClick={() => handleColorClick(hexColor)}
+									>
+										<CardBody className="h-16" style={{ backgroundColor: hexColor }} />
+										<CardFooter className="max-h-12 flex items-center justify-center border-t bg-white hover:bg-slate-100 ">
+											<div className="p-2 text-center w-full">
+												<p className="min-w-max w-20 font-bold">{hexColor}</p>
+											</div>
+										</CardFooter>
+									</Card>
 								))}
 						</div>
 						<Spacer y={4}></Spacer>
 					</>
 				) : null}
-				<div>
+				<div className="flex flex-col justify-center items-center m-h-[20vh] pb-10">
 					<ButtonGroup fullWidth={true}>
 						<Button className="w-4/5" fullWidth={true} color="primary" onClick={handleUploadButton}>
 							{uploadedImage ? "Change Image" : "Upload Image"}
